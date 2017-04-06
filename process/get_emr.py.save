@@ -1,0 +1,47 @@
+#!usr/bin/env python
+import sys
+import socket
+import MySQLdb
+import re
+
+id = int(sys.argv[2])
+uid = int(sys.argv[1])
+
+hostip = "localhost"
+port = 8090
+
+#uid = 1
+sock = socket.socket()
+sock.connect((hostip,port))
+#sock.send("%d",uid)
+
+result = sock.recv(1024)
+#result.split("\n")
+result = re.sub("syonptom:",'',result)
+result = re.sub("mediexam:",'',result)
+result = re.sub("diagnose:",'',result)
+result = re.sub("drug:",'',result)
+emr = result.split("\n")
+syonptom = emr[0]
+mediexam = emr[1]
+diagnose = emr[2]
+drug = emr[3] 
+
+conn = MySQLdb.connect('localhost','root','xx123456','family')
+cur = conn.cursor()
+
+tbl_name = "emr"
+try:
+	cur.execute("INSERT INTO emr(id,syonptom,mediexam,diagnose,drug) values (%s,%s,%s,%s,%s)",(id,syonptom,mediexam,diagnose,drug))
+	conn.commit()
+except:
+	conn.rollback()
+
+
+#f = open("view_emr.html","w")
+#f.write(result)
+#f.close()
+
+#print type(result)
+conn.close()
+sock.close()
